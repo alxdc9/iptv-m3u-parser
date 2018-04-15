@@ -4,6 +4,11 @@ import socketserver
 from urllib.parse import urlparse, parse_qs
 import os
 import shutil
+import configparser
+
+CONFIG = configparser.ConfigParser()
+CONFIG.read('config.ini')
+URL = CONFIG.get('Provider', 'URL')
 
 class Handler(http.server.SimpleHTTPRequestHandler):
 
@@ -12,12 +17,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     FILEPATH = 'sample.txt'
 
     def do_GET(self):
+        print(URL)
         # Construct a server response.
         self.parsedURL = parse_qs(urlparse(self.path).query)
 
         self.getParameters()
-
-        print(self.groups)
 
         with open(self.FILEPATH, 'rb') as f:
             self.send_response(200)
@@ -38,6 +42,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 
 if __name__ == '__main__':
+    
+#     Config = ConfigParser.ConfigParser(
 
     print('Server listening on port 8000...')
     httpd = socketserver.TCPServer(('', 8000), Handler)
