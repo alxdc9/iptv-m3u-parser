@@ -14,11 +14,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         # Construct a server response.
         self.parsedURL = parse_qs(urlparse(self.path).query)
-        
+
         self.getParameters()
-        
+
         print(self.groups)
-        
+
         with open(self.FILEPATH, 'rb') as f:
             self.send_response(200)
             self.send_header("Content-Type", 'application/octet-stream')
@@ -27,10 +27,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Content-Length", str(fs.st_size))
             self.end_headers()
             shutil.copyfileobj(f, self.wfile)
-          
+
     def getParameters(self):
         """
-        Gets username and password
+        Gets username, password and wanted groups
         """
         self.username = self.parsedURL['user'][0]
         self.password = self.parsedURL['pass'][0]

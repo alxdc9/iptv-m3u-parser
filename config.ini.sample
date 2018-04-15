@@ -1,0 +1,2 @@
+[Provider]
+URL=http://myprovider.com/get.php?username=%username%&password=%password%&type=m3u&output=ts
