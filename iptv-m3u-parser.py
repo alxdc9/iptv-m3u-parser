@@ -5,6 +5,7 @@ from urllib.parse import urlparse, parse_qs
 import os
 import shutil
 import configparser
+import urllib.request
 
 CONFIG = configparser.ConfigParser()
 CONFIG.read('config.ini')
@@ -12,16 +13,19 @@ URL = CONFIG.get('Provider', 'URL')
 
 class Handler(http.server.SimpleHTTPRequestHandler):
 
-#     def __init__(self):
-#         pass
     FILEPATH = 'sample.txt'
 
     def do_GET(self):
-        print(URL)
-        # Construct a server response.
+
+        # Parses request
         self.parsedURL = parse_qs(urlparse(self.path).query)
 
+        # Gets parameters out of request
         self.getParameters()
+
+        self.url = self.getUserURL()
+
+        self.downloadm3u()
 
         with open(self.FILEPATH, 'rb') as f:
             self.send_response(200)
@@ -39,6 +43,26 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.username = self.parsedURL['user'][0]
         self.password = self.parsedURL['pass'][0]
         self.groups = self.parsedURL['groups'][0].split(',')
+
+    def getUserURL(self):
+        url = URL
+        usernameString = 'username=' + self.username
+        passwordString = 'password=' + self.password
+
+        url = url.replace('username=', usernameString)
+        url = url.replace('password=', passwordString)
+
+        return url
+
+    def downloadm3u(self):
+        # Downloads file from provider
+        response = urllib.request.urlopen(self.url)
+        self.m3uContent = response.readlines()
+        del self.m3uContent[0]
+        print(self.m3uContent[0].decode('utf-8'))
+
+    def createList(self):
+        pass
 
 
 if __name__ == '__main__':
