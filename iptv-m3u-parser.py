@@ -6,6 +6,7 @@ import os
 import shutil
 import configparser
 import urllib.request
+import argparse
 
 CONFIG = configparser.ConfigParser()
 CONFIG.read('config.ini')
@@ -61,14 +62,55 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         del self.m3uContent[0]
         print(self.m3uContent[0].decode('utf-8'))
 
-    def createList(self):
-        pass
+
+class Parser():
 
 
-if __name__ == '__main__':
+    def filterGroups(self, wantedGroups):    
+        output = []
+        tag = 'group-title='
+        for counter, element in enumerate(self.content):
+            index = element.find(tag)
+            if index != -1:
+                subString = element[index+len(tag)+1:]
+                index = subString.find(',')
+                group = subString[:index-1]
+
+                if group in wantedGroups:                
+                    output.append(element)
+                    print(element.find('tvg-name="##########'))
+                    if element.find('tvg-name="##########') == -1:
+                        print(self.content[counter+1])
+                        output.append(self.content[counter+1])            
+        
+#         for element in output:
+#             print(element)
+
+
+if __name__ == '__main__':    
     
+    parser = Parser()
+    
+    def parseArgs():
+        parser = argparse.ArgumentParser(description='')
+        parser.add_argument('-f', '--file', action='store_true', help='Sets file mode', default='', required=False)
+        parser.add_argument('-g', '--groups', help='groups', default='', required=False)
+
+        return parser.parse_args()
+
 #     Config = ConfigParser.ConfigParser(
 
-    print('Server listening on port 8000...')
-    httpd = socketserver.TCPServer(('', 8000), Handler)
-    httpd.serve_forever()
+    args = parseArgs()
+    fileMode = args.file
+
+    if not fileMode:
+        print('Server listening on port 8000...')
+        httpd = socketserver.TCPServer(('', 8000), Handler)
+        httpd.serve_forever()
+    
+    else:
+        groups = args.groups.split(',')
+        with open('channels.m3u', 'r') as f:
+            parser.content = f.readlines()
+
+        parser.filterGroups(groups)
